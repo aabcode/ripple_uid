@@ -1,5 +1,0 @@
-List of deliverables
-  (1) research.pdf (Research Report)
-  (2) uid_design.pdf (Design document)
-  (3) aab_ripple.zip (Compressed folder of firmware source files)
-  (4) howto.pdf (How to generate UID)
