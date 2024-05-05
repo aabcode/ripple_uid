@@ -1,0 +1,1 @@
+gcc uid_hostside.c -o uid_hostside
