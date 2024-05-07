@@ -21,7 +21,8 @@
 #define uchar unsigned char
 
 // The UID structure
-// All fields are bytes in this structure (total 22), whereas final UUID generated has only 16 bytes 
+// All fields are bytes in this structure (total 22), 
+// whereas final UUID generated has only 16 total bytes (=128 bits) 
 typedef struct{
     uint8_t ts_year;
     uint8_t ts_month;
