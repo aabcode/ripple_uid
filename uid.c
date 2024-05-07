@@ -1,14 +1,14 @@
 /****************************************************************************/
-/*	Project:	| RIPPLE_UID												*/
-/*	Filename:	| uid.c														*/
-/*	Summary:	| Main (and only) source file for RIPPLE_UID project		*/
-/*				| Generates 128-bit UUID based on ROM parameters & 			*/
-/*				| timestamp from onboard RTC								*/
-/*	Copyright:	| GPL														*/
+/*	Project:	| RIPPLE_UID                                        */
+/*	Filename:	| uid.c						    */
+/*	Summary:	| Main (and only) source file for RIPPLE_UID project*/
+/*			| Generates 128-bit UUID based on ROM parameters &  */
+/*			| timestamp from onboard RTC                        */
+/*	Copyright:	| GPL						    */
 /* ------------------------------------------------------------------------ */
-/* 	Changelog	| Date		| Author	| Version |	Comments				*/
-/* ------------------------------------------------------------------------	*/
-/*				| 04/05/24	| A. Bokil	|	1.0	  | Creation				*/
+/* 	Changelog	| Date	      | Author	 | Version |	Comments    */
+/* ------------------------------------------------------------------------ */
+/*			| 04/05/24    | A. Bokil | 1.0	   | Creation	    */
 /****************************************************************************/
 #include <8052.h>
 #include <stdio.h>
