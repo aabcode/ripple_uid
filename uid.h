@@ -1,16 +1,27 @@
-/****************************************************************************/
-/*	Project:	| RIPPLE_UID												*/
-/*	Filename:	| uid.h														*/
-/*	Summary:	| Header file for RIPPLE_UID project		                */
-/*	Copyright:	| GPL														*/
-/* ------------------------------------------------------------------------ */
-/* 	Changelog	| Date		| Author	| Version |	Comments				*/
-/* ------------------------------------------------------------------------	*/
-/*				| 04/05/24	| A. Bokil	|	1.0	  | Creation				*/
-/****************************************************************************/
+/*-------------------------------------------------------------------------
+   uid.h: Include file for RIPPLE_UID project firmware
+
+   Copyright (C) 2024, Abhijit A. Bokil / abhijit.bokil@gmail.com
+
+   This library is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by the
+   Free Software Foundation; either version 2, or (at your option) any
+   later version.
+
+   This library is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+   GNU General Public License for more details.
+
+-------------------------------------------------------------------------*/
+
+#ifndef UID_H
+#define UID_H
 
 #define uchar unsigned char
 
+// The UID structure
+// All fields are bytes in this structure (total 22), whereas final UUID generated has only 16 bytes 
 typedef struct{
     uint8_t ts_year;
     uint8_t ts_month;
@@ -45,25 +56,26 @@ typedef struct{
 #define ROM_CONST_MONTH_OF_TEST         05  // 01-12 only
 #define ROM_CONST_DATE_OF_TEST          04  // 01-31 only
 
-// Function prototypes
+// ------------------ Function prototypes
+
+// I2C function prototypes
+void init_I2C(void);
 void Start(void);								
 void Stop(void); 
-
 unsigned char SlaveAck(void);
 void NoAck(void);
-
-void Wbyte(unsigned char x);
+void Wbyte(uchar x);
 unsigned char Rbyte(void);
+unsigned char I2C_Read(uchar Slave_addr, uchar addr);
+void I2C_Write(uchar Slave_addr, uchar addr, uchar dat);
 
-unsigned char I2C_Read(unsigned char Slave_addr, unsigned char addr);
-void I2C_Write(unsigned char Slave_addr, unsigned char addr, unsigned char dat);
-
+// UART functions
 void    init_UART(void);
 void    write_UART(uchar byte_to_tx);
 uchar   read_UART(void);
 
+// Miscellaneous functions
 void delay_ms(unsigned int ms);
-void init_I2C(void);
+int bcd_to_decimal(uchar x);
 
-int bcd_to_decimal(unsigned char x);
-uint8_t decimal_to_bcd(int y);
+#endif // UID_H

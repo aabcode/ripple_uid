@@ -1,15 +1,19 @@
-/****************************************************************************/
-/*	Project:	| RIPPLE_UID                                        */
-/*	Filename:	| uid.c						    */
-/*	Summary:	| Main (and only) source file for RIPPLE_UID project*/
-/*			| Generates 128-bit UUID based on ROM parameters &  */
-/*			| timestamp from onboard RTC                        */
-/*	Copyright:	| GPL						    */
-/* ------------------------------------------------------------------------ */
-/* 	Changelog	| Date	      | Author	 | Version |	Comments    */
-/* ------------------------------------------------------------------------ */
-/*			| 04/05/24    | A. Bokil | 1.0	   | Creation	    */
-/****************************************************************************/
+/*-------------------------------------------------------------------------
+   uid.c: Main and only firmware source file for RIPPLE_UID project
+
+   Copyright (C) 2024, Abhijit A. Bokil / abhijit.bokil@gmail.com
+
+   This library is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by the
+   Free Software Foundation; either version 2, or (at your option) any
+   later version.
+
+   This library is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+   GNU General Public License for more details.
+
+-------------------------------------------------------------------------*/
 #include <8052.h>
 #include <stdio.h>
 #include <stdbool.h>
@@ -17,12 +21,12 @@
 #include <stdlib.h>
 #include "uid.h"
 
+// Microcontroller port pins for I2C and LED
 __sbit __at (0xB6) SCL;  // P3_6;
 __sbit __at (0xB7) SDA;  // P3_7;
-
 __sbit __at (0xA0) LED; // P2_0
 
-// Specified criteria stored in ROM
+// Specified device criteria stored in ROM
 __code uint8_t __at (0x1f00) const_device_testline = ROM_CONST_DEVICE_TESTLINE;
 __code uint8_t __at (0x1f01) const_device_charax_code = ROM_CONST_DEVICE_CHARAX_CODE;
 __code uint8_t __at (0x1f02) const_year_manuf = ROM_CONST_YEAR_OF_MANUFACTURE;
@@ -32,7 +36,7 @@ __code uint8_t __at (0x1f05) const_year_tested = ROM_CONST_YEAR_OF_TEST;
 __code uint8_t __at (0x1f06) const_month_tested = ROM_CONST_MONTH_OF_TEST;
 __code uint8_t __at (0x1f07) const_date_tested = ROM_CONST_DATE_OF_TEST;
 
-
+//  Main function
 void main(void)
 {
 	uuid_t uuid;
@@ -135,12 +139,13 @@ void main(void)
 	while(1);
 }
 
-/*-----------------------------I2C Functions Definition-------------------------------------*/
+/*-----------------------------I2C Function Definitions-------------------------------------*/
 void init_I2C(void){
     // Disable the Clock halt bit in reg0 of the RTC
     //I2C_Write(0xD0, 0x00, 0x80);
 }
 
+// Start I2C communication
 void Start(void)
 {
 	SDA	= 1;
@@ -152,6 +157,7 @@ void Start(void)
 	delay_ms(1);
 }
 
+// Stop I2C communication
 void Stop(void)
 {
 	SDA	= 0;
@@ -162,6 +168,7 @@ void Stop(void)
 	delay_ms(1);
 }
 
+// I2C slave NACK
 void NoAck(void)
 {
 	SDA = 1;
@@ -172,9 +179,10 @@ void NoAck(void)
 	delay_ms(1);
 }
 
-unsigned char SlaveAck(void)
+// I2C slave acknowledge
+uchar SlaveAck(void)
 {
-	unsigned char val;
+	uchar val;
 
 	SCL	= 1;
 	delay_ms(1);
@@ -188,40 +196,35 @@ unsigned char SlaveAck(void)
 	return(val);
 }
 
-void Wbyte(unsigned char x)
+// Write a single byte over I2C
+void Wbyte(uchar x)
 {
-	unsigned char k;
-for(k=0; k<8; k++)
-{
-	if(x & (0x80 >> k))
-	{
-		SDA = 1;								
+	uchar k;
+	for(k=0; k<8; k++){
+		if(x & (0x80 >> k)){
+			SDA = 1;								
+		}else{
+			SDA = 0;								
+		}
+		delay_ms(1);
+		SCL	= 1;
+		delay_ms(1);
+		SCL	= 0;
 	}
-	else
-	{
-		SDA = 0;								
-	}
-	delay_ms(1);
-	SCL	= 1;
-	delay_ms(1);
-	SCL	= 0;
-}
 }
 
-unsigned char Rbyte(void)
+// Read a single byte over I2C
+uchar Rbyte(void)
 {
-	unsigned char k;
-	unsigned char rb;
+	uchar k;
+	uchar rb;
 
 	rb=0;
 	SCL	= 0;					
-	for(k=0; k<8; k++)
-	{
-		
+	for(k=0; k<8; k++){
 		SCL = 1;									
 		delay_ms(1);
-		if(SDA)		
-		{
+		if(SDA){
 			rb |= (0x80 >> k);						
 		}
 		delay_ms(1);
@@ -232,53 +235,42 @@ unsigned char Rbyte(void)
 	return(rb);
 }
 
-								
-void I2C_Write(unsigned char Slave_addr, unsigned char addr, unsigned char dat)
+// Writing device regs over I2C						
+void I2C_Write(uchar Slave_addr, uchar addr, uchar dat)
 {
 	Start();
-
 	Wbyte(Slave_addr);
-	SlaveAck();
-   
+	SlaveAck(); 
 	Wbyte(addr);
 	SlaveAck();
-
 	Wbyte(dat);
 	SlaveAck();
-
 	Stop();	
+	return;
 }
 
-unsigned char I2C_Read(unsigned char Slave_addr,unsigned char addr)
+// Reading device regs over I2C
+uchar I2C_Read(uchar Slave_addr,uchar addr)
 {
-	unsigned char byte;
-
+	uchar byte;
 
 	Start();
 	Wbyte(Slave_addr);
-
 	SlaveAck();
 	Wbyte(addr);
-
 	SlaveAck();
-
 	delay_ms(1);
-
 	Start();
-
-	Wbyte((Slave_addr|0x01));    
-          
-	SlaveAck();
-                         
+	Wbyte((Slave_addr|0x01));          
+	SlaveAck();                     
 	byte = Rbyte();
-
 	NoAck();
 	Stop();
 
 	return(byte);
-	
 }
 
+// Millisecond delay function
 void delay_ms(unsigned int ms)
 {
   unsigned int t1, t2;
@@ -308,17 +300,13 @@ void write_UART(uchar byte_to_tx){
 // Function to receive byte
 uchar read_UART(void){
 
-    //uchar Rxd_byte = 0;
-
     __asm__("CLR RI");
     while(RI == 0);
-
     RI = 0;
-
     return(SBUF);
 }
 
-int bcd_to_decimal(unsigned char x){
+int bcd_to_decimal(uchar x){
     return x - 6 * (x >> 4);
 }
 
